@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Property Valuation Worksheet</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,420;0,9..144,600;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+    :root {
+      --paper: #f5f1e6;
+      --panel: #faf7ee;
+      --ink: #221d16;
+      --blue: #2c4a6e;
+      --blue-deep: #17263a;
+      --rust: #a8481f;
+      --line: #d9d0ba;
+      --muted: #837a68;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 32px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'IBM Plex Mono', ui-monospace, monospace;
+      color: var(--ink);
+      background-color: var(--paper);
+      background-image:
+        linear-gradient(var(--line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+
+    .sheet {
+      position: relative;
+      width: 100%;
+      max-width: 860px;
+      background: var(--panel);
+      border: 1.5px solid var(--blue-deep);
+      padding: 40px 44px 0;
+    }
+
+    /* drafting corner marks */
+    .sheet::before,
+    .sheet::after,
+    .sheet .corner-tr,
+    .sheet .corner-bl {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid var(--blue-deep);
+    }
+
+    .sheet::before {
+      top: -1.5px;
+      left: -1.5px;
+      border-right: none;
+      border-bottom: none;
+    }
+
+    .sheet::after {
+      bottom: -1.5px;
+      right: -1.5px;
+      border-left: none;
+      border-top: none;
+    }
+
+    .corner-tr {
+      top: -1.5px;
+      right: -1.5px;
+      border-left: none;
+      border-bottom: none;
+    }
+
+    .corner-bl {
+      bottom: -1.5px;
+      left: -1.5px;
+      border-right: none;
+      border-top: none;
+    }
+
+    header {
+      display: flex;
+      align-items: flex-start;
+      gap: 18px;
+      margin-bottom: 30px;
+    }
+
+    header svg {
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    h1 {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-weight: 500;
+      font-size: 30px;
+      margin: 0 0 6px;
+      line-height: 1.15;
+      color: var(--blue-deep);
+    }
+
+    header p {
+      margin: 0;
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 46ch;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 36px;
+      align-items: start;
+    }
+
+    @media (max-width: 680px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .section-label {
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      color: var(--blue);
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 6px;
+      margin: 22px 0 12px;
+    }
+
+    .section-label:first-of-type {
+      margin-top: 0;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 12.5px;
+      color: var(--ink);
+      font-family: -apple-system, sans-serif;
+    }
+
+    input,
+    select {
+      font-family: 'IBM Plex Mono', monospace;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      padding: 9px 10px;
+      font-size: 13.5px;
+      outline: none;
+      border-radius: 0;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--blue);
+      outline: 2px solid var(--blue);
+      outline-offset: 1px;
+    }
+
+    button {
+      width: 100%;
+      margin: 8px 0 24px;
+      padding: 13px;
+      border: 1.5px solid var(--blue-deep);
+      background: var(--blue-deep);
+      color: var(--panel);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13.5px;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: var(--blue);
+      border-color: var(--blue);
+    }
+
+    button:focus-visible {
+      outline: 2px solid var(--rust);
+      outline-offset: 2px;
+    }
+
+    /* result stamp */
+    .stamp-well {
+      border: 1px dashed var(--line);
+      padding: 22px;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .stamp-empty {
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.7;
+      text-align: center;
+    }
+
+    #result {
+      display: none;
+    }
+
+    #result.show {
+      display: block;
+    }
+
+    .stamp {
+      text-align: center;
+      border: 2px solid var(--rust);
+      color: var(--rust);
+      padding: 14px 10px 16px;
+      transform: rotate(-1.2deg);
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .stamp {
+        animation: press 260ms ease-out;
+      }
+    }
+
+    @keyframes press {
+      0% {
+        transform: rotate(-1.2deg) scale(1.22);
+        opacity: 0;
+      }
+
+      100% {
+        transform: rotate(-1.2deg) scale(1);
+        opacity: 1;
+      }
+    }
+
+    .stamp .tag {
+      font-size: 10.5px;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+
+    .stamp .price {
+      font-family: 'Fraunces', serif;
+      font-weight: 600;
+      font-size: 34px;
+      color: var(--blue-deep);
+      line-height: 1;
+    }
+
+    .takeoff {
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--ink);
+    }
+
+    .takeoff-line {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      padding: 3px 0;
+    }
+
+    .takeoff-line .dots {
+      flex: 1;
+      border-bottom: 1px dotted var(--line);
+      transform: translateY(-3px);
+    }
+
+    .takeoff-line .amt {
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .takeoff-line.total {
+      border-top: 1px solid var(--blue-deep);
+      margin-top: 6px;
+      padding-top: 8px;
+      font-weight: 600;
+    }
+
+    .takeoff-line.total .amt {
+      color: var(--blue-deep);
+    }
+
+    .title-block {
+      margin-top: 34px;
+      border-top: 1.5px solid var(--blue-deep);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .title-block div {
+      padding: 10px 14px;
+      border-left: 1px solid var(--line);
+      font-size: 10px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .title-block div:first-child {
+      border-left: none;
+      padding-left: 0;
+    }
+
+    .title-block strong {
+      display: block;
+      color: var(--ink);
+      font-size: 10px;
+    }
+
+    @media (max-width: 680px) {
+      .title-block {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .title-block div:nth-child(3) {
+        border-left: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sheet">
+    <span class="corner-tr"></span><span class="corner-bl"></span>
+
+    <header>
+      <svg width="46" height="46" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="6" y="18" width="34" height="22" stroke="#2c4a6e" stroke-width="1.4" />
+        <path d="M4 20L23 6L42 20" stroke="#a8481f" stroke-width="1.4" fill="none" />
+        <line x1="23" y1="24" x2="23" y2="40" stroke="#2c4a6e" stroke-width="1" />
+        <path d="M23 32a5 5 0 0 1 5 5" stroke="#2c4a6e" stroke-width="0.8" fill="none" />
+      </svg>
+      <div>
+        <h1>Property Valuation Worksheet</h1>
+        <p>Fill in the specifications below. The estimate is calculated instantly in your browser using a fixed
+          rule-based formula — no data leaves this page.</p>
+      </div>
+    </header>
+
+    <main>
+      <form id="predict-form">
+        <div class="section-label">Structure</div>
+        <div class="row">
+          <div class="field">
+            <label for="sqft">Size (sqft)</label>
+            <input type="number" id="sqft" min="100" step="1" value="1500" required />
+          </div>
+          <div class="field">
+            <label for="age">Age of house (yrs)</label>
+            <input type="number" id="age" min="0" step="1" value="5" required />
+          </div>
+          <div class="field">
+            <label for="bedrooms">Bedrooms</label>
+            <input type="number" id="bedrooms" min="0" step="1" value="3" required />
+          </div>
+          <div class="field">
+            <label for="bathrooms">Bathrooms</label>
+            <input type="number" id="bathrooms" min="0" step="1" value="2" required />
+          </div>
+          <div class="field">
+            <label for="floor">Floor number</label>
+            <input type="number" id="floor" min="0" step="1" value="2" required />
+          </div>
+          <div class="field">
+            <label for="parking">Parking available</label>
+            <select id="parking" required></select>
+          </div>
+        </div>
+
+        <div class="section-label">Location &amp; finish</div>
+        <div class="row">
+          <div class="field">
+            <label for="area">Area / locality</label>
+            <select id="area" required></select>
+          </div>
+          <div class="field">
+            <label for="direction">Facing direction</label>
+            <select id="direction" required></select>
+          </div>
+          <div class="field full">
+            <label for="furnishing">Furnishing</label>
+            <select id="furnishing" required></select>
+          </div>
+        </div>
+
+        <button type="submit">Calculate value</button>
+      </form>
+
+      <div class="stamp-well">
+        <div class="stamp-empty" id="stamp-empty">Estimate appears here<br />once calculated.</div>
+        <div id="result">
+          <div class="stamp">
+            <div class="tag">ESTIMATED VALUE</div>
+            <div class="price" id="price-value">--</div>
+          </div>
+          <div class="takeoff" id="breakdown"></div>
+        </div>
+      </div>
+    </main>
+
+    <div class="title-block">
+      <div><strong>SHEET</strong>A&#8209;01</div>
+      <div><strong>SCALE</strong>NOT TO SCALE</div>
+      <div><strong>MODEL</strong>RULE&#8209;BASED, V1</div>
+      <div><strong>STATUS</strong>DEMO &mdash; NOT MARKET DATA</div>
+    </div>
+  </div>
+
+  <script>
+    const BASE_PRICE_PER_SQFT = 120;
+    const AREA_MULTIPLIER = { "Downtown": 1.5, "Coastal": 1.35, "Suburb": 1.0, "Rural": 0.7 };
+    const DIRECTION_BONUS = {
+      "North": 1.03, "East": 1.05, "North-East": 1.06,
+      "South": 0.98, "West": 1.0, "South-West": 0.97,
+      "North-West": 1.01, "South-East": 1.02,
+    };
+    const FURNISHING_BONUS = { "Furnished": 1.08, "Semi-Furnished": 1.03, "Unfurnished": 1.0 };
+
+    function fillSelect(id, values) {
+      const select = document.getElementById(id);
+      select.innerHTML = '';
+      values.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v;
+        opt.textContent = v;
+        select.appendChild(opt);
+      });
+    }
+    fillSelect('area', Object.keys(AREA_MULTIPLIER));
+    fillSelect('direction', Object.keys(DIRECTION_BONUS));
+    fillSelect('furnishing', Object.keys(FURNISHING_BONUS));
+    fillSelect('parking', ['Yes', 'No']);
+
+    const money = n => (n < 0 ? '-$' : '+$') + Math.abs(Math.round(n)).toLocaleString();
+
+    function predictPrice(input) {
+      const { sqft, bedrooms, bathrooms, age, floor, direction, area, furnishing, parking } = input;
+      const multiplier = AREA_MULTIPLIER[area] * DIRECTION_BONUS[direction] * FURNISHING_BONUS[furnishing];
+      const base = sqft * BASE_PRICE_PER_SQFT * multiplier;
+
+      const items = [
+        { label: `Base — ${sqft} sqft, ${area}, ${direction}-facing, ${furnishing.toLowerCase()}`, amount: base },
+        { label: `Bedrooms — ${bedrooms} × $8,000`, amount: bedrooms * 8000 },
+        { label: `Bathrooms — ${bathrooms} × $5,000`, amount: bathrooms * 5000 },
+        { label: `Age adjustment — ${age} yrs × $900`, amount: -age * 900 },
+        { label: `Floor level — ${floor} × $400`, amount: floor * 400 },
+        { label: `Parking — ${parking}`, amount: parking === 'Yes' ? 15000 : 0 },
+      ];
+      const rawTotal = items.reduce((sum, i) => sum + i.amount, 0);
+      const total = Math.max(rawTotal, 8000);
+      return { items, total };
+    }
+
+    const form = document.getElementById('predict-form');
+    const stampEmpty = document.getElementById('stamp-empty');
+    const resultBox = document.getElementById('result');
+    const priceValue = document.getElementById('price-value');
+    const breakdown = document.getElementById('breakdown');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const input = {
+        sqft: parseFloat(document.getElementById('sqft').value),
+        bedrooms: parseInt(document.getElementById('bedrooms').value, 10),
+        bathrooms: parseFloat(document.getElementById('bathrooms').value),
+        age: parseFloat(document.getElementById('age').value),
+        floor: parseInt(document.getElementById('floor').value, 10),
+        direction: document.getElementById('direction').value,
+        area: document.getElementById('area').value,
+        furnishing: document.getElementById('furnishing').value,
+        parking: document.getElementById('parking').value,
+      };
+
+      const { items, total } = predictPrice(input);
+
+      priceValue.textContent = '$' + Math.round(total).toLocaleString();
+      breakdown.innerHTML = items.map(i =>
+        `<div class="takeoff-line"><span>${i.label}</span><span class="dots"></span><span class="amt">${money(i.amount)}</span></div>`
+      ).join('') + `<div class="takeoff-line total"><span>Total</span><span class="dots"></span><span class="amt">$${Math.round(total).toLocaleString()}</span></div>`;
+
+      stampEmpty.style.display = 'none';
+      resultBox.classList.remove('show');
+      void resultBox.offsetWidth;
+      resultBox.classList.add('show');
+    });
+  </script>
+</body>
+
+</html>
